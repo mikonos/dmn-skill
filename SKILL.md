@@ -1,12 +1,11 @@
 ---
 name: dmn-default-mode-network
 description: |
-  DMN (Default Mode Network) - AI 自主思考系统。
-  基于合成神经生物学框架，在用户不主动交互时自动进行内部整合、意义生成和创造力激发。
-  关键词：AI、Agent、协作、自动化、思考、深度思考、自我反思、创意生成、后台运行、一人多职、效率提升、生产力、OpenClaw、Claude Code、Cursor。
-  使用场景：当用户说"AI 自主思考"、"DMN"、"后台思考"、"让 AI 自己想想"、"AI 协作"、"Agent 协作"时触发。
+  DMN - AI 自主思考系统，让 AI 在后台自动思考。
+  关键词：AI 自主思考、后渊思考、连续思考、深度思考、创意生成、AI协作、Agent协作、自动化、生产力、一人公司、AI autonomous thinking, background thinking, continuous thinking, deep thinking, creative thinking, AI collaboration, Agent collaboration, automation, productivity, one-person company.
+  使用场景：AI 自主思考, DMN, 后台思考, AI collaboration, Agent collaboration.
 license: agpl-3.0
-version: 3.0.1
+version: 3.0.4
 ---
 
 # DMN - 默认模式网络

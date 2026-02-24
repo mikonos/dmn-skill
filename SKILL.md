@@ -27,6 +27,7 @@ DMN（Default Mode Network）是模拟大脑默认模式网络的自主思考系
 
 > **注意**：用户活动检测由外部触发层（cron 配置）负责，DMN skill 被触发即执行，不再自行判断用户是否活跃。
 
+```
 Step 0: 读取上次 Synthesis + 活跃 Thread
 ├── 距上次 > 2h → 情形 A（完整 DMN）
 │   ├── Step 1: 反重复检查
@@ -452,94 +453,9 @@ Session Synthesis 中增加「资产清单」段落（详见下方 Synthesis 格
 
 ---
 
-## 完整执行流程（情形 A）
+## 完整执行流程（情形 A / 情形 B）
 
-### Step 0：读取上次 Synthesis + 活跃 Thread（🆕 跨天续接）
-
-1. 找最新的 `YYYYMMDD_DMN_Synthesis_*.md`
-2. 提取：`未解问题`（本次起点）、`不要再问`（跳过列表）、`未完成提醒`
-3. **扫描 `CEO思考/` 下最近 3 天的目录**
-4. **找到所有状态为 🔄 的活跃 Thread File**
-5. **读取其「思考轨迹」和「当前结论」**
-6. 活跃 Thread 成为本次 DMN 的优先候选起点
-7. 如果没有 Synthesis 也没有活跃 Thread → 跳过，进入 Step 1
-
-**优先级**：昀峤留的问题 > 活跃 Thread 续接 > Synthesis 未解问题 > DMN 自生成问题
-
-### Step 1：反重复检查
-
-- 列出今日 CEO思考 文件名
-- 提取关键词，标记已饱和主题
-- 结合 Step 0 的 `不要再问` 列表
-- 检查 `pendingActions` 中的未完成项
-
-### Step 2：衰减窗口检查
-
-- 读取 `dmn-state.json` 的 `continuousRunHours`
-- 如果 > 4 小时 → 仅写晨间简报，不做深度思考
-- 如果 2-4 小时 → 精炼模式（仅 Thread 追加）
-
-### Step 3：向内漫游
-
-- 读取 memory/YYYY-MM-DD.md（当天+前一天）
-- 读取 MEMORY.md
-- 检查昀峤是否留下了"今晚的问题"（在 HEARTBEAT.md 或 memory 中）
-
-### Step 4：功能选择
-
-| 状态 | 推荐功能 |
-|------|---------|
-| 有活跃 Thread 需要续接 | 继续该 Thread，选最合适的功能 |
-| 有未解问题（来自 Synthesis） | 继续该方向 |
-| 新决策/新学习 | 自我叙事 |
-| 卡住了/需要创意/主题饱和 | 创造力暗室 |
-| 用户反馈/优先级变化 | 社会认知 |
-| 一天产出多/需要整合 | 意义生成 |
-| 需要外部框架打破内部视角 | CEO思维模拟 |
-
-### Step 5：产出
-
-- **同主题深化** → 追加到 Thread File
-- **全新主题** → 新建 Thread File
-- **碎片灵感** → 独立 fleeting note
-- 写入 `CEO思考/YYYY-MM-DD/`
-- 每篇至少链接 1 个已有笔记 + 1 个三大目标索引
-- **质量自评**：⭐ / ⭐⭐ / ⭐⭐⭐
-
-### Step 6：TPN 门控检查
-
-- 检查本轮洞见与上轮是否实质相同
-- 检查 pendingActions 是否有连续未完成项
-- 如果触发 → 产出 Action Card，停止 DMN
-- 如果未触发 → 继续
-
-### Step 7：Session Synthesis（必须执行）
-
-- 写 `YYYYMMDD_DMN_Synthesis_HHMM.md`（含资产清单 + 未完成提醒）
-- 更新 `dmn-state.json`
-
-### Step 8：不遗忘写入
-
-- P0 行动项 + 高价值资产路径 → 写入 `memory/YYYY-MM-DD.md`
-- 新 Action Card → 写入 `dmn-state.json` 的 `pendingActions`
-
-### Step 9：通知
-
-- 飞书发送 Synthesis 摘要（不是文件列表）
-- 如有 P0 未完成项 → 置顶提醒
-- 格式：想清楚了什么 + 资产清单 + 行动计划
-
----
-
-## 情形 B（继续深化）执行
-
-1. 读取上次 Synthesis 的 `未解问题` + 活跃 Thread
-2. 反重复检查 + 衰减窗口检查
-3. **追加到已有 Thread**（不新建文件），选一个新角度深化
-4. 质量自评 + TPN 门控
-5. **更新（不是新建）当日最新 Synthesis**
-6. 不遗忘写入
-7. 不发飞书（避免打扰，除非有重大发现或 P0 未完成提醒）
+详见 **references/execution-flow.md**：Step 0（读取 Synthesis + 活跃 Thread）→ Step 1–9（反重复、衰减窗口、向内漫游、功能选择、产出、TPN 门控、Synthesis、不遗忘、通知、触发日志）；情形 B 为追加到 Thread + 更新 Synthesis + 不遗忘 + 写触发日志。
 
 ---
 
@@ -595,42 +511,7 @@ Session Synthesis 中增加「资产清单」段落（详见下方 Synthesis 格
 
 ## dmn-state.json 格式
 
-存放于：`CEO思考/dmn-state.json`
-
-```json
-{
-  "lastCEO": "Jeff Bezos",
-  "lastCEOTimestamp": "2026-02-22T16:32:00+08:00",
-  "lastFunction": "CEO思维模拟",
-  "lastSynthesisFile": "20260224_DMN_Synthesis_0200.md",
-  "todaySaturatedTopics": ["闭环验证", "为什么没发"],
-  "tonightQuestion": "",
-  "continuousRunHours": 2.5,
-  "qualityLog": [
-    {"time": "02:00", "level": 3, "topic": "准备陷阱", "thread": "Thread_方法论输出"}
-  ],
-  "pendingActions": [
-    {
-      "action": "发布准备陷阱文章",
-      "createdAt": "2026-02-23T05:00",
-      "source": "CEO思考/2026-02-23/20260223_创造力暗室_第一篇文章草稿.md",
-      "priority": "P0",
-      "reminderCount": 0,
-      "maxReminders": 3,
-      "status": "pending"
-    }
-  ],
-  "activeThreads": [
-    {
-      "file": "CEO思考/2026-02-22/20260222_Thread_北美老年AI用户研究.md",
-      "topic": "北美老年AI用户研究",
-      "rounds": 8,
-      "status": "active",
-      "lastUpdated": "2026-02-22T18:12:00+08:00"
-    }
-  ]
-}
-```
+存放于思考目录下的 `dmn-state.json`。必选字段：`lastCEO`、`lastCEOTimestamp`、`lastSynthesisFile`、`todaySaturatedTopics`、`tonightQuestion`、`continuousRunHours`、`qualityLog`、`pendingActions`、`activeThreads`。完整 schema 与示例见 **references/dmn-state-schema.md**。
 
 ---
 

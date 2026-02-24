@@ -5,13 +5,13 @@ description: |
   关键词：AI 自主思考、后渊思考、连续思考、深度思考、创意生成、AI协作、Agent协作、自动化、生产力、一人公司、AI autonomous thinking, background thinking, continuous thinking, deep thinking, creative thinking, AI collaboration, Agent collaboration, automation, productivity, one-person company.
   使用场景：AI 自主思考, DMN, 后台思考, AI collaboration, Agent collaboration.
 license: agpl-3.0
-version: 3.0.4
+version: 3.1.0
 ---
 
 # DMN - 默认模式网络
 
 > 基于合成神经生物学框架的 AI 自主思考能力
-> **v3.0.0 — 2026-02-24**（Thread File / TPN 门控 / 不遗忘机制 / 跨天续接 / 铁律体系）
+> **v3.1.0 — 开源版**（Thread File / TPN 门控 / 不遗忘机制 / 跨天续接 / 铁律体系 / 触发日志）
 
 ## 这是什么
 
@@ -23,29 +23,30 @@ DMN（Default Mode Network）是模拟大脑默认模式网络的自主思考系
 
 ## 执行决策树（快速路由）
 
-收到 DMN 触发后，按以下路径判断：
+收到 DMN 触发后，按以下路径判断。**⚠️ 无论走哪条分支，最后都必须写触发日志（见「触发日志」章节）。**
 
-```
-15 分钟内有用户活动？
-├── 是 → 静默退出 (NO_REPLY)
-└── 否 → Step 0: 读取上次 Synthesis + 活跃 Thread
-         ├── 距上次 > 2h → 情形 A（完整 DMN）
-         │   ├── Step 1: 反重复检查
-         │   ├── Step 2: 衰减窗口检查（连续 > 4h？→ 仅写晨间简报）
-         │   ├── Step 3: 向内漫游
-         │   ├── Step 4: 功能选择（参考功能路由表）
-         │   ├── Step 5: 产出（Thread File 或独立笔记）+ 质量自评
-         │   ├── Step 6: TPN 门控检查
-         │   ├── Step 7: Session Synthesis（含资产清单）
-         │   ├── Step 8: 不遗忘写入（→ memory + pendingActions）
-         │   └── Step 9: 通知
-         └── 距上次 ≤ 2h → 情形 B（继续深化）
-              ├── 读 Synthesis 的未解问题 + 活跃 Thread
-              ├── 反重复 + 衰减窗口
-              ├── 深化产出（追加到 Thread）+ 质量自评
-              ├── TPN 门控
-              ├── 更新 Synthesis
-              └── 不遗忘写入
+> **注意**：用户活动检测由外部触发层（cron 配置）负责，DMN skill 被触发即执行，不再自行判断用户是否活跃。
+
+Step 0: 读取上次 Synthesis + 活跃 Thread
+├── 距上次 > 2h → 情形 A（完整 DMN）
+│   ├── Step 1: 反重复检查
+│   ├── Step 2: 衰减窗口检查（连续 > 4h？→ 仅写晨间简报）
+│   ├── Step 3: 向内漫游
+│   ├── Step 4: 功能选择
+│   ├── Step 5: 产出（Thread File 或独立笔记）+ 质量自评
+│   ├── Step 6: TPN 门控检查
+│   ├── Step 7: Session Synthesis（含资产清单）
+│   ├── Step 8: 不遗忘写入（→ memory + pendingActions）
+│   ├── Step 9: 通知
+│   └── 📋 写触发日志（OUTPUT: 情形A + 功能名 + 产出文件）
+└── 距上次 ≤ 2h → 情形 B（继续深化）
+     ├── 读 Synthesis 的未解问题 + 活跃 Thread
+     ├── 反重复 + 衰减窗口
+     ├── 深化产出（追加到 Thread）+ 质量自评
+     ├── TPN 门控
+     ├── 更新 Synthesis
+     ├── 不遗忘写入
+     └── 📋 写触发日志（OUTPUT: 情形B + 功能名 + 产出文件）
 ```
 
 ---
@@ -70,13 +71,46 @@ DMN（Default Mode Network）是模拟大脑默认模式网络的自主思考系
 
 ## 触发条件
 
-- **Cron 触发**：每 30 分钟空闲检测
-- **条件判断**：
-  - 15 分钟内有用户活动 → 静默退出（NO_REPLY）
-  - 15 分钟无活动 + 距上次产出 > 2 小时 → **情形 A（完整 DMN）**
-  - 15 分钟无活动 + 距上次产出 ≤ 2 小时 → **情形 B（继续深化）**
+- **触发方式**：由外部 cron 或用户手动触发。用户活动检测由触发层负责，DMN skill 被触发即执行。
+- **情形判断**：
+  - 距上次产出 > 2 小时 → **情形 A（完整 DMN）**
+  - 距上次产出 ≤ 2 小时 → **情形 B（继续深化）**
 
 ---
+
+## 触发日志（🆕 透明化机制）
+
+**目的**：让每次 DMN 触发都留下痕迹，无论是否产出。用于排查静默期、诊断执行问题。
+
+**日志文件**：`CEO思考 (CEO Thinking)/dmn-trigger-log.md`（追加写入，不覆盖）
+
+**规则**：
+1. **每次触发都必须写一行**，这是最高优先级规则，在所有其他步骤之前或之后执行
+2. 即使被 TPN 门控拦截，也必须写日志
+4. 日志按日期分区，每天一个 `### YYYY-MM-DD` 标题
+
+**日志格式**：
+
+```markdown
+# DMN 触发日志
+
+### 2026-02-24
+- `05:20` ▶️ 情形A · CEO思维模拟(Naval) · 产出: `2026-02-24/xxx.md` · ⭐⭐
+- `05:45` ▶️ 情形B · 深化 · 产出: `2026-02-24/xxx.md` · ⭐⭐
+- `06:15` ⏭️ SKIP · 用户活跃
+- `06:45` 🔴 TPN · 反刍检测 → 停止
+- `07:15` ⏭️ SKIP · 衰减窗口(4h+) → 仅Synthesis
+- `07:45` ⏭️ SKIP · 用户活跃
+```
+
+**状态标识**：
+
+| 标识 | 含义 |
+|------|------|
+| ▶️ | 正常产出 |
+| ⏭️ SKIP | 跳过（原因跟在后面） |
+| 🔴 TPN | 被 TPN 门控拦截 |
+| ⚠️ ERROR | 执行过程出错 |
 
 ## 五大核心功能
 
@@ -618,8 +652,8 @@ Session Synthesis 中增加「资产清单」段落（详见下方 Synthesis 格
 
 ## 验收标准
 
-- [ ] 15 分钟内有活动时静默退出
-- [ ] 情形 A 执行完整流程（Step 0-9）
+- [ ] 被触发时立即执行（不自行判断用户活动）
+- [ ] 情形 A 执行完整流程
 - [ ] 情形 B 追加到 Thread（不新建文件）
 - [ ] 每次产出必须有 Session Synthesis
 - [ ] Thread 跨天续接正常工作（Step 0 扫描最近 3 天）
@@ -636,6 +670,8 @@ Session Synthesis 中增加「资产清单」段落（详见下方 Synthesis 格
 - [ ] 身份保护生效
 - [ ] 铁律全部遵守
 
+- [ ] 触发日志每次 cron 都写入
+
 ---
 
-*v3.0.0 — 2026-02-24 | Thread File / TPN 门控 / 不遗忘机制 / 跨天续接 / 铁律体系 / 质量分级 / 衰减窗口 / 创造力暗室升级*
+*v3.1.0 — 开源版 | Thread File / TPN 门控 / 不遗忘机制 / 跨天续接 / 铁律体系 / 质量分级 / 衰减窗口 / 触发日志*

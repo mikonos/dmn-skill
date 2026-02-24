@@ -1,17 +1,14 @@
 ---
 name: dmn-default-mode-network
-description: |
-  DMN - AI 自主思考系统，让 AI 在后台自动思考。
-  关键词：AI 自主思考、后渊思考、连续思考、深度思考、创意生成、AI协作、Agent协作、自动化、生产力、一人公司、AI autonomous thinking, background thinking, continuous thinking, deep thinking, creative thinking, AI collaboration, Agent collaboration, automation, productivity, one-person company.
-  使用场景：AI 自主思考, DMN, 后台思考, AI collaboration, Agent collaboration.
+description: DMN - AI 自主思考系统，后台连续思考、意义生成与创造力激发。关键词：AI 自主思考、DMN、后台思考、Agent协作。
 license: agpl-3.0
-version: 3.1.0
+version: 3.2.0
 ---
 
 # DMN - 默认模式网络
 
 > 基于合成神经生物学框架的 AI 自主思考能力
-> **v3.1.0 — 开源版**（Thread File / TPN 门控 / 不遗忘机制 / 跨天续接 / 铁律体系 / 触发日志）
+> **v3.2.0 — 开源版**（状态路由 / 主题时间衰减 / Thread 机制）
 
 ## 这是什么
 
@@ -21,33 +18,31 @@ DMN（Default Mode Network）是模拟大脑默认模式网络的自主思考系
 
 ---
 
-## 执行决策树（快速路由）
+## 执行决策树（状态路由）
 
-收到 DMN 触发后，按以下路径判断。**⚠️ 无论走哪条分支，最后都必须写触发日志（见「触发日志」章节）。**
+按以下路径判断。**⚠️ 无论走哪条分支，最后都必须写触发日志（见「触发日志」章节）。**
 
-> **注意**：用户活动检测由外部触发层（cron 配置）负责，DMN skill 被触发即执行，不再自行判断用户是否活跃。
+> **注意**：抛弃了通过绝对时间（如距上次 >2h）进行的死板判定。采用基于"认知状态"和"热度衰减"的流动路由。
 
 ```
-Step 0: 读取上次 Synthesis + 活跃 Thread
-├── 距上次 > 2h → 情形 A（完整 DMN）
-│   ├── Step 1: 反重复检查
-│   ├── Step 2: 衰减窗口检查（连续 > 4h？→ 仅写晨间简报）
-│   ├── Step 3: 向内漫游
-│   ├── Step 4: 功能选择
-│   ├── Step 5: 产出（Thread File 或独立笔记）+ 质量自评
-│   ├── Step 6: TPN 门控检查
-│   ├── Step 7: Session Synthesis（含资产清单）
-│   ├── Step 8: 不遗忘写入（→ memory + pendingActions）
-│   ├── Step 9: 通知
-│   └── 📋 写触发日志（OUTPUT: 情形A + 功能名 + 产出文件）
-└── 距上次 ≤ 2h → 情形 B（继续深化）
-     ├── 读 Synthesis 的未解问题 + 活跃 Thread
-     ├── 反重复 + 衰减窗口
-     ├── 深化产出（追加到 Thread）+ 质量自评
-     ├── TPN 门控
-     ├── 更新 Synthesis
-     ├── 不遗忘写入
-     └── 📋 写触发日志（OUTPUT: 情形B + 功能名 + 产出文件）
+收到触发 → Step 0: 读取上下文，评估活跃话题热度（距今 < 24h 的 🔄 Thread）
+│
+├── 评估一：是否必须进行【全局漫游】(Global Roaming)？
+│   ├─ 条件1：跨天首次触发（今天无 Synthesis）
+│   ├─ 条件2：所有活跃 Thread 均已“热度衰减”（> 24h 无更新）或人工中止
+│   ├─ 条件3：找不到未解问题，认知陷入空歇期
+│   └─ 👉 执行 🔵 全局漫游模式（原情形A）：
+│        ├─ Step 1-3: 反重复 / 休眠判定 / 向内漫游
+│        ├─ Step 4: 功能选择（从“最久未想”的战场找锚点）
+│        ├─ Step 5: 建新 Thread 或独立笔记 + 质量自评
+│        └─ Step 6-9: TPN 门控 / 新建 Synthesis / 不遗忘 / 通知 / 日志
+│
+└── 评估二：顺势而为【顺势深化】(Contextual Continuation)
+    ├─ 条件：存在未衰减（< 24h）的 🔄 活跃 Thread，或存在明确的「未解问题」
+    └─ 👉 执行 🟢 顺势深化模式（原情形B）：
+         ├─ Step 1-2: 按热度选定要追投的 Thread（< 6h的优先）
+         ├─ Step 3-4: 追加写入（不换文档） + 质量自评
+         └─ Step 5-7: TPN 门控 / 更新当天的 Synthesis / 不遗忘 / 日志
 ```
 
 ---
@@ -56,8 +51,7 @@ Step 0: 读取上次 Synthesis + 活跃 Thread
 
 **不可违反，优先级高于一切功能逻辑。**
 
-1. **No Rumination（反刍禁令）**：
-   同一核心洞见不得以不同措辞重复出现。检测方法：「这一轮的一句话洞见，和上一轮的一句话洞见，一个外行能分辨出区别吗？」不能分辨 → 你在反刍，触发 TPN 门控。
+1. **No Rumination（反刍禁令）**：同一核心洞见不得换措辞重复。外行无法区分本轮与上轮洞见 → 反刍，触发 TPN 门控。
 
 2. **Action-or-Archive（行动或归档）**：
    每篇产出必须在 24 小时内被转化为行动（Action Card）或合并归档。超过 24 小时未处理 → 下次反重复检查时标记为低优先级。
@@ -83,7 +77,7 @@ Step 0: 读取上次 Synthesis + 活跃 Thread
 
 **目的**：让每次 DMN 触发都留下痕迹，无论是否产出。用于排查静默期、诊断执行问题。
 
-**日志文件**：`CEO思考 (CEO Thinking)/dmn-trigger-log.md`（追加写入，不覆盖）
+**日志文件**：`CEO思考/dmn-trigger-log.md`（追加写入，不覆盖）
 
 **规则**：
 1. **每次触发都必须写一行**，这是最高优先级规则，在所有其他步骤之前或之后执行

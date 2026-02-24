@@ -32,14 +32,16 @@ fi
 
 echo "============================================================"
 
-# 第二步：发布到 ClawHub (根据原先 PUBLISH.md，需在上一级目录执行)
+# 第二步：发布到 ClawHub（仅打包 SKILL.md 以避免嵌入 token 超限）
 echo "🌐 步骤 2: 发布到 ClawHub 社区..."
-cd "${SKILL_DIR}/../"
-
-if clawhub publish ./dmn-default-mode-network --slug dmn-default-mode-network --version "$VERSION" --changelog "$CHANGELOG" --tags latest; then
+CLAWHUB_DIR=$(mktemp -d)
+cp "${SKILL_DIR}/SKILL.md" "${CLAWHUB_DIR}/"
+if clawhub publish "$CLAWHUB_DIR" --slug dmn-default-mode-network --version "$VERSION" --changelog "$CHANGELOG" --tags latest; then
     echo "✅ ClawHub 发布成功！"
+    rm -rf "$CLAWHUB_DIR"
 else
     echo "⚠️ 警告：ClawHub 发布失败。"
+    rm -rf "$CLAWHUB_DIR"
     exit 1
 fi
 

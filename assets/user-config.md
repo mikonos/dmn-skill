@@ -5,7 +5,7 @@
 ## 1. 目录与路径配置 (Paths)
 - **记忆区 (Memory Dir)**: `memory/` (你的 AI 每日记忆和日志存放目录)
 - **漫游区 (Knowledge Base Dirs)**: `01_永久笔记/`, `02_文献笔记/` (供“创造力暗室”随机抽取灵感的知识库目录，可填多个)
-- **产出区 (Output Dir)**: `CEO思考/` (DMN 运行结果保存的目录)
+- **产出区 (Output Dir)**: `memory/dmn-think/` (DMN 运行结果保存的目录)
 - **提议区 (Proposal File)**: `PROPOSED_CHANGES.md` (用于接收 AI 对设定的修改建议)
 - **心跳/用户留言 (Heartbeat)**: `HEARTBEAT.md` (用于接收你的临时锚点和提问)
 

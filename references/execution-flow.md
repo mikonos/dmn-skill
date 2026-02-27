@@ -21,7 +21,7 @@
 
 ### Step 3：向内漫游
 - 读取 `[记忆区]/YYYY-MM-DD.md`（当天+前一天）
-- 读取 `[记忆区]/MEMORY.md` 核心记忆
+- 读取 `MEMORY.md` 核心记忆
 - 检查用户是否留下了"今晚的问题"（在 `[心跳/用户留言]` 文件或 memory 中）
 
 ### Step 4：功能选择
@@ -43,8 +43,10 @@
 - 命名：`YYYYMMDD_[功能]_[标题].md`
 - 每篇至少链接 1 个已有笔记 + 1 个 `[核心目标索引]`
 
-### Step 6：Session Synthesis（必须执行）
+### Step 6：Session Synthesis 与极客行动提案（必须执行）
 - 写 `YYYYMMDD_DMN_Synthesis_HHMM.md`
+- **极客行动提案 (Agentic Action Proposal)**：作为拥有这台主机完全控制权限的 OpenClaw Agent，DMN 必须模拟领域专家，基于本次思考的洞见，提出 1-2 个具体、可执行的技术行动提案（例如：装一个 GitHub 项目、写一个验证 Demo 代码、新建一个工具脚本等），记录在 Synthesis 的专项模块中。
+- **进化队列投递 (Evolution Handoff)**：如果上述行动提案涉及“提升 AI 能力”、“优化系统工作流”或“编写新 Skill”，在写完 Synthesis 后，**必须顺手将该提案提取为一行摘要，追加写入到 `memory/evolve/candidates.md` 队列中**（无需写入全部细节，仅作为下一次触发 `self-evolve` 的信号）。
 - 更新 `dmn-state.json`（lastCEO, lastFunction, timestamp）
 
 ### Step 7：通知

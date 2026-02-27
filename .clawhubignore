@@ -1,0 +1,4 @@
+# 不随 ClawHub 发布的文件（与 .gitignore 一致）
+# 用户本地/个人配置与发布脚本
+publish.sh
+assets/user-config.personal.md
